@@ -1,5 +1,7 @@
 # Vikas Yadav — portfolio
 
+**Live:** https://vikasyadav018.vercel.app
+
 A personal developer portfolio. One scrolling page (hero, selected work, how I
 work, stack, footer) plus one route per case study at `/work/[slug]`.
 
