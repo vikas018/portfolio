@@ -8,6 +8,7 @@ export const dynamic = 'force-static'
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes: MetadataRoute.Sitemap = [
     { url: `${site.url}/`, changeFrequency: 'monthly', priority: 1 },
+    { url: `${site.url}/colophon/`, changeFrequency: 'yearly', priority: 0.4 },
   ]
   for (const study of caseStudies) {
     routes.push({

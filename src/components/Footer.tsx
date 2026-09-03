@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { site } from '@/lib/site'
 
 export function Footer() {
@@ -17,6 +18,9 @@ export function Footer() {
             <a className="link" href={site.links.linkedin} target="_blank" rel="noreferrer">
               LinkedIn
             </a>
+            <Link className="link" href="/colophon/">
+              Colophon
+            </Link>
           </div>
           <p className="footer-meta">
             {site.location} · © {year} {site.name}
