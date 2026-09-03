@@ -9,7 +9,7 @@ export const site = {
 
   // TODO(vikas): swap for your custom domain (e.g. https://vikasyadav.dev) once
   // you buy one. Everything below (OG tags, sitemap) reads from this one value.
-  url: 'https://vikas-yadav.vercel.app',
+  url: 'https://vikasyadav018.vercel.app',
 
   // One-sentence positioning — the through-line of the whole site.
   tagline:
