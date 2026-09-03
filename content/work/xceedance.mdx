@@ -1,0 +1,31 @@
+{/*
+  Second case study — Xceedance (current role, insurance technology).
+  NDA: product and project specifics cannot be disclosed. Written honestly and
+  generally; no padding, no invented detail. The structure is complete so the
+  slot stands on its own.
+  TODO(vikas): anything you are comfortable sharing publicly — the kind of
+  workflow, a rough scale, a concrete problem Form.io solved — would strengthen
+  "What it is" and "How it's built". Tell me and I'll add only what you approve.
+*/}
+
+## What it is
+
+I'm a Senior Software Engineer at Xceedance, working in insurance technology. My work here is internal tooling for insurance operations — the interfaces and workflows that the business runs on rather than a public-facing product. The specific systems are under NDA, so this study is about the engineering approach, not the product.
+
+## The constraint
+
+Insurance runs on forms, and insurance forms change. Fields get added, rules get rewritten, a regulator or a new line of business shifts what a workflow has to capture. If every one of those changes is a code change — a ticket, a developer, a deploy — the tooling becomes the bottleneck for the business. The constraint was to build workflows that non-engineers could evolve without waiting on engineering for each edit.
+
+## The decision
+
+Rather than hand-code each form in React, I build them with **Form.io**, where a form is a JSON schema rather than a component tree. That moves the definition of a form out of the codebase and into data the business can own. The trade-off is deliberate: I give up some pixel-level control over bespoke layouts in exchange for forms that can be changed, versioned, and extended without a release. For internal operational tooling — where correctness, auditability, and speed of change matter more than a custom visual identity — that is the right trade.
+
+## How it's built
+
+A React application renders and drives the Form.io schemas, wired to internal REST APIs for data and submission. The engineering work sits around the edges of the form engine: validation and conditional logic that the schema can't express on its own, integration with the systems the forms feed, and the surrounding application state and navigation.
+
+**Stack:** React, Form.io, JavaScript, REST APIs.
+
+## What I'd change
+
+This is early in the role, so the honest answer is that the picture is still forming. The lesson I'm carrying in from the last four years applies directly: schema-driven forms make the *happy path* fast, but the custom logic that accretes around them is where maintainability is won or lost. My priority is keeping that logic tested and contained rather than letting it spread through the application — the same discipline that kept a four-year product maintainable.

@@ -1,0 +1,48 @@
+{/*
+  Third case study — persona-reply (personal project). Grounded in the real code
+  in the "persona app" folder: React + Vite, Google OAuth to YouTube Data API v3
+  from the browser, a thin Express proxy holding the Gemini key.
+  Repo is private / half-baked -> links shown as "Coming soon" (comingSoon: true
+  in the registry). Shortest of the three by design.
+  TODO(vikas): when the repo is public, set repo/demo URLs and comingSoon:false
+  in content/work/index.ts, and drop a screenshot at public/work/persona-reply.webp.
+*/}
+
+## What it is
+
+persona-reply drafts replies to a YouTube creator's comments in the creator's own voice. You connect your channel, load a video's comments, and for each one get three tone-matched suggestions to edit and post. You set the voice once — warmth, length, emoji, a sign-off, catchphrases — and it learns from the replies you actually send. It's the one project here that exists to show I stay current with AI tooling, so it's the shortest of the three, not the deepest. (A second mode, a Truth Analyzer that summarises a video's transcript, shares the same voice settings.)
+
+## The constraint
+
+Two hard limits shaped every decision. The **YouTube Data API** gives 10,000 quota units a day; reading comments costs about 1 unit each but *posting a reply costs 50*, which caps a session at roughly 200 replies before the quota resets at midnight Pacific. And each suggestion is an **LLM call with real per-comment cost**. So the tool could not be chatty with either API — no speculative pre-fetching, no regenerating on a whim, no auto-suggesting for a whole page unless asked.
+
+## The decision
+
+**Replies are reviewed and posted by hand — never auto-posted.** The whole point is the creator's voice and reputation; a wrong-tone auto-reply on their channel is exactly the failure this tool must not cause. The model drafts; the human ships. A sensitive-topic guardrail goes further and declines to suggest at all on comments best handled personally, leaving the creator to write their own.
+
+**A web app, not a Chrome extension.** An extension would mean fighting YouTube's DOM and its changes forever; a web app talks to the documented API and is stable.
+
+**A backend that does exactly one thing.** There's no database and no user accounts — the browser calls YouTube directly with the user's OAuth token. The only reason a server exists is to hold the LLM key so it never ships in the browser bundle. Everything else stays client-side.
+
+## How it's built
+
+React + Vite front end. Google Identity Services handles OAuth; the browser then calls the YouTube Data API v3 directly. A thin Express proxy owns one route, `/api/suggest`, which is the only place the Gemini key lives. Voice settings and the learn-from-your-edits examples persist in `localStorage`.
+
+The API wrapper carries the awkward real-world details: tokens expire after about an hour, so a 401 triggers one silent refresh and a single retry before giving up, and every call tallies its own quota cost so the session estimate stays honest.
+
+```js
+// One silent refresh + retry on 401, then a friendly error. Every successful
+// call tallies its quota cost (reads = 1 unit, posting a reply = 50).
+if (res.status === 401 && !retried) {
+  try { await refresh() } catch { /* fall through to a friendly error */ }
+  if (accessToken) return request(path, options, true)
+}
+if (!res.ok) throw await toFriendlyError(res)
+quotaUsed += options.method === 'POST' ? 50 : 1
+```
+
+**Stack:** React, Vite, YouTube Data API v3, Google Identity Services (OAuth), Express, Gemini API.
+
+## What I'd change
+
+The proxy is unauthenticated, which is why this is honestly a localhost project and not a deployed one: anyone who could reach the server could spend the LLM key. A real deployment needs auth on that proxy and server-side rate limiting before anything else. I'd also stop bolting features together — the Truth Analyzer grew onto the reply tool because the plumbing was already there, and the two would be cleaner as separate things that share a voice-settings module rather than one app that does both.

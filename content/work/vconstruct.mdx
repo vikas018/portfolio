@@ -1,0 +1,57 @@
+{/*
+  Flagship case study — vConstruct / VueOps, 4 years.
+  Angle: the Apryse in-browser document viewer + 2D asset mapper (hardest problem),
+  with the Storybook component library folded in as supporting evidence of range.
+  NDA: company named (public on CV/LinkedIn); product described generally; no
+  internal metrics or client names.
+  TODO(vikas): if you can share any real numbers (drawing sizes, marker counts,
+  load times before/after), tell me and I'll work them in — none are invented here.
+*/}
+
+## What it is
+
+For four years I worked on a construction-technology SaaS platform at vConstruct / VueOps. The part I owned longest was the document experience: an in-browser viewer for large construction drawings, and a 2D mapper that pins live asset data — equipment, warranties, maintenance records — onto the right spot on the plan. A facilities team could open a floor plan in the browser, see every tracked asset in place, and click through to its record. It ran in a normal browser tab, on the kind of laptop a site manager actually has.
+
+## The constraint
+
+Everything hard about this job came from the word *browser*. The drawings are large multi-page documents. The asset overlay can be dense — many markers on a single plan. And all of it had to render, stay interactive while panning and zooming, and not exhaust a tab's memory.
+
+Four constraints pulled against each other at once:
+
+- **Rendering large drawings** without the viewer stalling on load or on zoom.
+- **Memory** — big documents can balloon a browser tab, and ours had to survive long sessions.
+- **Drawing many asset markers** over the document without frame rate collapsing as the count grew.
+- **Coordinate mapping** — a marker is anchored to a point on the *document*, but has to be painted at the right *screen* position through every pan and zoom.
+- **Persistence** — placements and annotations had to save, reload exactly where they were left, and survive re-opening the document.
+
+## The decision
+
+I chose to build on the **Apryse (PDFtron) SDK** rather than render documents myself. A hand-rolled canvas or an image-tile pipeline was the obvious alternative, and I rejected it: document rendering, text, and annotation handling are a multi-year problem on their own, and Apryse had already solved the part that wasn't our product. Our product was the *asset mapping on top*, and that is where the effort belonged.
+
+The second decision was to keep the asset markers in a **separate overlay layer** rather than as native annotations inside the document. The overlay subscribes to the viewer's own pan/zoom state and re-projects marker positions from document coordinates to screen coordinates. That kept our domain data — which asset, which record, which status — out of the document format and in our own model, where it could be queried, filtered, and styled without fighting the SDK.
+
+## How it's built
+
+A React front end embeds the Apryse viewer. Application state lives in Redux; the asset overlay is a React layer positioned above the document canvas, driven by the viewer's coordinate system so markers track the page through every transform. A Ruby on Rails backend owns the asset, warranty, and placement data and its persistence, with RSpec covering the API. Underneath all of it sat a shared component library I helped build in Storybook, so the viewer, the overlay controls, and the rest of the product drew from the same set of tested UI primitives.
+
+The core of the overlay is a single projection: given a point in document space and the viewer's current transform, where on screen does the marker go?
+
+```ts
+// Project a marker's document-space point to screen pixels, so it stays
+// pinned to the drawing through pan and zoom. Recomputed on every viewer
+// transform event rather than stored, so there is one source of truth.
+function toScreen(point: DocPoint, view: ViewTransform): ScreenPoint {
+  return {
+    x: (point.x - view.originX) * view.zoom,
+    y: (point.y - view.originY) * view.zoom,
+  }
+}
+```
+
+The shape is simple; keeping it correct across page rotation, multi-page documents, and hundreds of markers is what took the time.
+
+**Stack:** React, TypeScript, Apryse (PDFtron) SDK, Redux, Ruby on Rails, RSpec, Storybook.
+
+## What I'd change
+
+I'd isolate the coordinate math sooner. For too long the projection logic lived close to the components that used it, which meant every rendering bug had to be reproduced through the UI. Late on, pulling it into a small, framework-free module with its own unit tests made the whole overlay easier to reason about — if I did it again, that module would exist from day one, before the first marker was ever drawn. I'd also virtualise markers earlier: culling everything outside the viewport is the change that most helped dense plans, and I reached for it later than I should have.
