@@ -337,9 +337,9 @@ hr {
   grid-template-columns: 1fr;
   gap: 1.25rem;
 }
-@media (min-width: 860px) {
+@media (min-width: 720px) {
   .work-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

@@ -1,0 +1,40 @@
+{/*
+  Fourth case study — Mudgal Tea (personal project + side business).
+  Grounded in the real repo: React 18 + TS + Vite + Tailwind + React Router,
+  WhatsApp ordering, Formspree, JSON-LD SEO, GitHub Pages SPA fallback.
+  Live: https://vikas018.github.io/MudgalTea/  Repo: github.com/vikas018/MudgalTea
+  No invented metrics. No phone numbers or lead details published here.
+*/}
+
+## What it is
+
+Mudgal Tea is my family&rsquo;s tea and coffee shop in Meerut. I built and shipped its website end to end — a small marketing and ordering site whose only job is to turn an online visitor into someone who walks in, calls, or orders over WhatsApp. It&rsquo;s live, in use, and I own all of it: the design, the code, the content, and the deploys.
+
+## The constraint
+
+This is a neighbourhood shop, not an e-commerce operation. There&rsquo;s no budget for a backend or a payment gateway, and no one on staff to sit and watch an order dashboard. Orders had to arrive where the shop already works — on a phone, in WhatsApp. Hosting had to be free, and a non-technical owner had to be able to trust it to just run. One more wrinkle: the free host, GitHub Pages, has no server, which quietly breaks normal single-page-app routing the moment someone refreshes or opens a shared link.
+
+## The decision
+
+**Ordering happens over WhatsApp, not a checkout.** Every product and pack size builds a pre-filled WhatsApp message; the customer taps send and the order lands in the shop&rsquo;s chat. I rejected a full store (Shopify, a payment gateway) — the monthly cost and operational overhead make no sense for one shop — and I rejected a custom backend, because the best server is the one you don&rsquo;t have to run or secure. The contact form posts to Formspree with a WhatsApp fallback, so there&rsquo;s still no server. All the shop&rsquo;s details — products, prices, address, hours, socials — live in a few typed data files, so the owner&rsquo;s information can change without anyone touching a component.
+
+## How it's built
+
+React 18 with TypeScript, built with Vite and styled with Tailwind. React Router drives the Home, Shop, Product, About, and Contact routes. Each route sets its own meta and Open Graph tags and ships **LocalBusiness** and **Product** JSON-LD, so search engines can present it as a real local business rather than a generic page. A privacy-light analytics setup tracks only the two actions that matter — WhatsApp and Call clicks. It deploys to GitHub Pages.
+
+The order button is the whole product philosophy in one function — no cart, no backend, just a message:
+
+```ts
+// Each order is a pre-filled WhatsApp message to the shop. No cart, no
+// payment gateway — the customer just taps send.
+export const whatsappLink = (message: string, digits = business.phoneDigits) =>
+  `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+```
+
+The trickiest part was routing. Because GitHub Pages returns a static 404 for any unknown path, a hard refresh of `/shop` would break. The standard SPA fallback fixes it: a `404.html` rewrites the path into a query string and `index.html` decodes it back before the router boots, so deep links and refreshes work.
+
+**Stack:** React, TypeScript, Vite, Tailwind CSS, React Router, Formspree, GitHub Pages.
+
+## What I'd change
+
+The SEO is only as strong as a client-rendered app can be. Crawlers run JavaScript now, but pre-rendering each route to static HTML would be strictly better for a business that lives on local search — moving it to a static export, the same approach this portfolio uses, is the change I&rsquo;d make first. After that: a custom domain, and replacing the last placeholder content — real product photos, confirmed opening hours, and a few genuine customer quotes, all marked as TODOs in the code today.

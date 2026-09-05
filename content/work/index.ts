@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import VConstruct from './vconstruct.mdx'
 import Xceedance from './xceedance.mdx'
+import MudgalTea from './mudgal-tea.mdx'
 import PersonaReply from './persona-reply.mdx'
 
 // The registry of case studies. Prose lives in the .mdx files above; the
@@ -51,6 +52,23 @@ export const caseStudies: CaseStudy[] = [
     comingSoon: false,
     image: null,
     Body: Xceedance,
+  },
+  {
+    slug: 'mudgal-tea',
+    title: 'Mudgal Tea — a WhatsApp-ordering site for a tea shop',
+    context: 'Personal project · Side business',
+    period: 'Live · built end to end',
+    summary:
+      'The marketing and ordering site for my family’s tea & coffee shop in Meerut — designed, built, and shipped by me. React and TypeScript, with WhatsApp-based ordering instead of a checkout, and full local-business SEO. Live and in use.',
+    stack: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'React Router', 'GitHub Pages'],
+    repo: 'https://github.com/vikas018/MudgalTea',
+    demo: 'https://vikas018.github.io/MudgalTea/',
+    comingSoon: false,
+    image: {
+      src: '/work/mudgal-tea.webp',
+      alt: 'The Mudgal Tea homepage: a cup of tea with the site’s navigation and “Discover the finest Indian teas” heading',
+    },
+    Body: MudgalTea,
   },
   {
     slug: 'persona-reply',

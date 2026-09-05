@@ -61,7 +61,7 @@ export default function Home() {
               <span id="work-heading">Selected work</span>
             </Reveal>
             <Reveal as="p" className="section-lede">
-              Three projects, most to least substantial. Each page follows the same five
+              Four projects, most to least substantial. Each page follows the same five
               questions: what it is, the constraint, the decision, how it&rsquo;s built, and what
               I&rsquo;d change.
             </Reveal>
