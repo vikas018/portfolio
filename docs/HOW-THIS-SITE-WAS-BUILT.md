@@ -1,20 +1,3 @@
-# How this portfolio was built — a complete, plain-English guide
-
-**Who this is for:** you (Vikas), so you can read every decision, understand it,
-and explain it confidently in an interview — and anyone else who wants to build
-a portfolio or a similar site from scratch.
-
-**Your starting point:** you know React. This guide keeps pointing back to that:
-"in plain React you'd do X; here we do Y, because…". If you understand React
-components, props, and state, you can follow all of this.
-
-**The one-line summary (memorise this for interviews):**
-
-> It's a statically-exported Next.js site — TypeScript, Tailwind for styling,
-> MDX for the case-study content — deployed on Vercel. It scores 100 on all four
-> Lighthouse categories, works with JavaScript disabled, and supports dark mode.
-
----
 
 ## Table of contents
 
