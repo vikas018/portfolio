@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import VConstruct from './vconstruct.mdx'
 import Xceedance from './xceedance.mdx'
 import MudgalTea from './mudgal-tea.mdx'
+import FamilySaathi from './familysaathi.mdx'
 import PersonaReply from './persona-reply.mdx'
 
 // The registry of case studies. Prose lives in the .mdx files above; the
@@ -69,6 +70,20 @@ export const caseStudies: CaseStudy[] = [
       alt: 'The Mudgal Tea homepage: a cup of tea with the site’s navigation and “Discover the finest Indian teas” heading',
     },
     Body: MudgalTea,
+  },
+  {
+    slug: 'familysaathi',
+    title: 'FamilySaathi — a lead-gen site for a driver & family-assistance service',
+    context: 'Personal project · Side business',
+    period: 'Live · built end to end',
+    summary:
+      'The Phase-1 marketing and enquiry site for a service I’m starting in Meerut — verified drivers and family assistance. Plain HTML, CSS, and vanilla JS with no framework, WhatsApp-based enquiries, and content in typed arrays built to migrate to Next.js once demand is proven. Live.',
+    stack: ['HTML5', 'CSS3', 'Vanilla JavaScript', 'Vercel'],
+    repo: 'https://github.com/vikas018/familysaathi',
+    demo: 'https://portfolio-ywcd.vercel.app',
+    comingSoon: false,
+    image: null,
+    Body: FamilySaathi,
   },
   {
     slug: 'persona-reply',
