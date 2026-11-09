@@ -1,44 +1,55 @@
 {/*
   Case study — FamilySaathi (personal project, live).
-  Grounded in the real repo: a Phase-1 static marketing / lead-gen site built in
-  plain HTML + CSS + vanilla JS — no framework. Theme toggle, hero booking
-  widget, driver search/filter, FAQ accordion, WhatsApp-based enquiry.
-  Data (drivers, faqs) lives in typed arrays in main.js, ready to move to an API.
+  Two phases, both grounded in the real repo:
+    Phase 1 — a zero-dependency static site (HTML + CSS + vanilla JS).
+    Phase 2 — a full-stack Next.js 15 (App Router) + TypeScript rebuild, with
+              Prisma + Supabase Postgres behind drivers / FAQs / enquiries, a
+              seed-data fallback so it builds and runs with or without a DB,
+              and /api/enquiry lead capture. Deployed on Vercel.
   Live: https://portfolio-ywcd.vercel.app  Repo: github.com/vikas018/familysaathi
   No invented metrics. No real phone numbers or lead details published here.
 */}
 
 ## What it is
 
-FamilySaathi is a service I&rsquo;m starting in Meerut and the Delhi-NCR corridor: verified drivers for your own car, plus trusted day-to-day family assistance. This is the site that turns a visitor into an enquiry. I designed, built, and shipped it end to end — it&rsquo;s a Phase-1 marketing and lead-generation site, live, and entirely mine to run.
+FamilySaathi is a service I&rsquo;m starting in Meerut and the Delhi-NCR corridor: verified drivers for your own car, plus trusted day-to-day family assistance. I designed and built the whole thing — and it&rsquo;s the clearest example in my portfolio of shipping deliberately in two phases: prove the idea cheaply first, then build the real engineering once it&rsquo;s worth it. It&rsquo;s live and entirely mine to run: design, code, database, and deploys.
 
-## The constraint
+## Phase 1 — prove demand, spend nothing
 
-The product doesn&rsquo;t exist in software yet — the first job isn&rsquo;t a booking engine, it&rsquo;s proving demand. So the site had to go live fast and cost nothing to run, while still looking like a real business people would trust with a driver for their family. Enquiries had to land somewhere the owner actually checks — a phone and WhatsApp — not a dashboard no one watches. And whatever I built first couldn&rsquo;t become a dead end: once there are real drivers, real bookings, and a backend, the site has to grow into that, not be thrown away.
+The product didn&rsquo;t exist in software yet, so the first job wasn&rsquo;t a booking engine — it was finding out whether anyone wanted this. I shipped a **static site with no framework and no build step**: one `index.html`, one stylesheet, one vanilla-JS file. Enquiries went straight to WhatsApp via pre-filled messages, so there was no backend to run or secure. It cost nothing to host and went live fast.
 
-## The decision
+The one piece of foresight that made Phase 2 cheap: even in the static version, the content that would eventually come from a database — the driver profiles and the FAQs — already lived in **typed arrays in a single source-of-truth file**, never hard-coded into the markup. I built Phase 1 knowing exactly how it would grow.
 
-**Ship a static site with no build step and no framework — plain HTML, CSS, and vanilla JavaScript.** For a Phase-1 site whose only job is to explain the service and capture enquiries, a React or Next.js setup is weight I&rsquo;d be paying for nothing. So the whole thing is one `index.html`, one stylesheet, and one JS file. Enquiries go over WhatsApp: the booking widget and contact form build a pre-filled message and hand it to the shop&rsquo;s chat, so there&rsquo;s no backend to run or secure. Crucially, the content that will later come from a database — the driver profiles and the FAQs — already lives in typed arrays in one file, as a single source of truth. That one decision is what lets this grow into a Next.js app later instead of being rewritten.
+## Phase 2 — the full-stack rebuild
 
-## How it's built
+Once the shape of the thing was right, I rebuilt it end to end into a **Next.js 15 (App Router) app in TypeScript**, backed by **Prisma and Postgres (Supabase)** — while keeping the Phase-1 design pixel-for-pixel by porting the stylesheet verbatim. The static sections became server components; the interactive parts (theme toggle, booking widget, driver search &amp; filter, FAQ accordion, enquiry form) became focused client islands.
 
-A single static page in HTML5, CSS3, and vanilla JavaScript — no framework, no bundler, no dependencies. The JavaScript drives everything interactive: a light/dark theme toggle (respecting the system preference), a mobile menu, a hero booking widget that assembles the enquiry, a driver search-and-filter list, an FAQ accordion, and WhatsApp links wired across the page. It deploys on Vercel.
+The decision I&rsquo;m most pleased with is the **data layer with a seed-data fallback**. Drivers and FAQs are read from the database at request time, but if there&rsquo;s no `DATABASE_URL` — or a query fails — the same code falls back to the built-in seed arrays:
 
-Every enquiry is just a pre-filled WhatsApp message — no cart, no backend:
-
-```js
-// Each enquiry becomes a pre-filled WhatsApp message to the business.
-// No form backend, no server to run or secure.
-function waLink(msg) {
-  return "https://wa.me/" + WA_NUMBER + "?text=" +
-    encodeURIComponent(msg || ("Hi " + BRAND + ", I'd like to know more."));
+```ts
+export async function getDrivers(): Promise<Driver[]> {
+  if (prisma) {
+    try {
+      const rows = await prisma.driver.findMany({
+        where: { active: true }, orderBy: { order: 'asc' },
+      })
+      if (rows.length) return rows.map(toView)
+    } catch (err) {
+      console.error('[data] DB error — using seed data:', err)
+    }
+  }
+  return seedDrivers // same content that seeds the DB, so nothing ever renders empty
 }
 ```
 
-The part I was most deliberate about is the data. The driver cards and FAQ entries read from plain arrays declared at the top of the script, so the content changes without touching markup — and when there&rsquo;s a real backend, those same arrays become an API or CMS call. The static sections map one-to-one onto React components, so the migration path is a refactor, not a rebuild.
+That one pattern means the app **builds and runs identically with or without a database** — it deploys and renders on day one, then becomes fully DB-driven the moment the connection string is set, with no code change. The enquiry form now does both jobs: it `POST`s to an `/api/enquiry` route that validates the input and saves a real lead to Postgres, *and* still opens the pre-filled WhatsApp chat. Business details — WhatsApp number, phone, email, canonical URL — moved out of the code into `NEXT_PUBLIC_*` env vars, so going live is a config change, not a commit.
 
-**Stack:** HTML5, CSS3, Vanilla JavaScript, Vercel.
+**Stack:** Next.js 15, React, TypeScript, Prisma, Postgres (Supabase), Vercel.
 
-## What I'd change
+## What shipping it actually taught me
 
-This is Phase 1 on purpose, and it&rsquo;s honest about that: the phone number, WhatsApp number, email, and pricing are still placeholders marked as TODOs, waiting on the real business details. Once demand is proven, the plan I built toward kicks in — move it to Next.js, turn the driver and FAQ arrays into real data behind an API, and replace the WhatsApp-only flow with a proper `/api/enquiry` endpoint so leads are captured and tracked rather than living in a chat thread. The static site isn&rsquo;t the destination; it&rsquo;s the cheapest possible way to find out whether the destination is worth building.
+The rebuild deployed cleanly through a couple of real-world snags worth noting, because they&rsquo;re the kind of thing that only shows up in production. The Vercel project had been created for the static Phase-1 site, so its framework preset was still &ldquo;Other&rdquo; — the Next.js build compiled fine but then failed looking for a static output folder, until I switched the preset to Next.js. And Vercel&rsquo;s security scanner flagged a React Server Components CVE in the pinned version, which I took as an auto-patch bumping to the fixed release. Deploys run off Git now, so every push to `main` ships.
+
+## What I'd change next
+
+The foundation is built for where this goes: customer accounts, a real booking workflow with status tracking, and an admin dashboard so the drivers, FAQs and incoming enquiries can be managed without touching code — the schema and data layer are already shaped for it. The near-term list is the honest launch work: swap the placeholder contact details and pricing for the real business values, wire the production Supabase project, and add a custom domain. Phase 1 told me the idea was worth building; Phase 2 is the thing I can actually grow.

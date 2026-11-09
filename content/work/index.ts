@@ -73,12 +73,12 @@ export const caseStudies: CaseStudy[] = [
   },
   {
     slug: 'familysaathi',
-    title: 'FamilySaathi — a lead-gen site for a driver & family-assistance service',
+    title: 'FamilySaathi — a driver & family-assistance service, static site → full-stack app',
     context: 'Personal project · Side business',
     period: 'Live · built end to end',
     summary:
-      'The Phase-1 marketing and enquiry site for a service I’m starting in Meerut — verified drivers and family assistance. Plain HTML, CSS, and vanilla JS with no framework, WhatsApp-based enquiries, and content in typed arrays built to migrate to Next.js once demand is proven. Live.',
-    stack: ['HTML5', 'CSS3', 'Vanilla JavaScript', 'Vercel'],
+      'A verified-driver and family-assistance service I’m starting in Meerut. Shipped first as a zero-dependency static site to prove demand, then rebuilt end to end into a full-stack Next.js app — Prisma + Postgres behind the drivers, FAQs and enquiry capture, with a seed-data fallback so it runs with or without a database. Live.',
+    stack: ['Next.js', 'React', 'TypeScript', 'Prisma', 'Postgres (Supabase)', 'Vercel'],
     repo: 'https://github.com/vikas018/familysaathi',
     demo: 'https://portfolio-ywcd.vercel.app',
     comingSoon: false,
