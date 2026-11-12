@@ -3,6 +3,7 @@ import VConstruct from './vconstruct.mdx'
 import Xceedance from './xceedance.mdx'
 import MudgalTea from './mudgal-tea.mdx'
 import FamilySaathi from './familysaathi.mdx'
+import NcrimsVoice from './ncrims-voice.mdx'
 import PersonaReply from './persona-reply.mdx'
 
 // The registry of case studies. Prose lives in the .mdx files above; the
@@ -84,6 +85,20 @@ export const caseStudies: CaseStudy[] = [
     comingSoon: false,
     image: null,
     Body: FamilySaathi,
+  },
+  {
+    slug: 'ncrims-voice',
+    title: 'NCRIMS Care Connect — a white-label AI voice-outreach platform for a hospital',
+    context: 'Freelance · Live for a real client',
+    period: '2026 · built end to end',
+    summary:
+      'A B2B SaaS that automates a hospital’s outbound patient calls — appointment confirmations, camp announcements, follow-ups — with an AI voice agent in Hindi and English. Built around a provider-agnostic voice adapter (swap the calling vendor with one env var) and a money-safe, unit-tested prepaid-minute billing engine. Node + Express + MongoDB behind a React dashboard, deployed end to end.',
+    stack: ['React', 'Vite', 'Node.js', 'Express', 'MongoDB (Atlas)', 'JWT', 'Vercel'],
+    repo: 'https://github.com/vikas018/ncrims-voice-platform',
+    demo: 'https://ncrims-voice-platform.vercel.app',
+    comingSoon: false,
+    image: null, // TODO(vikas): add public/work/ncrims-voice.webp
+    Body: NcrimsVoice,
   },
   {
     slug: 'persona-reply',

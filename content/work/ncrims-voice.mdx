@@ -1,0 +1,43 @@
+{/*
+  Case study — NCRIMS Care Connect (freelance / personal build for a real client).
+  Grounded in the real code at github.com/vikas018/ncrims-voice-platform:
+  Node + Express + MongoDB backend, React + Vite dashboard, a provider-agnostic
+  voice adapter, and a unit-tested 60-second pulse billing engine.
+  Live: frontend on Vercel, backend on Back4App (free tier — the backend sleeps
+  after ~60 min, so wake it before sharing the demo). repo/demo set in index.ts.
+  TODO(vikas): drop a screenshot at public/work/ncrims-voice.webp and set `image`.
+*/}
+
+## What it is
+
+Care Connect is a white-label admin portal that automates a hospital's outbound patient calls — appointment confirmations, health-camp announcements, and follow-ups — placed by an AI voice agent in Hindi and English. It's built for NCR Institute of Medical Science (NCRIMS): their staff log in to a branded dashboard, upload a patient list as CSV, trigger a bulk calling campaign, and then listen to recordings, read transcripts, and track outcomes — all without touching a phone. It's a real B2B SaaS, sold as prepaid calling minutes, and I built it end to end.
+
+## The constraint
+
+Two things shaped the whole architecture. First, **the voice-AI vendor had to be swappable.** The cheapest way to demo the product to the client was a browser-based "test call" on a vendor's free trial (no phone number, no cost). But production needed an India-focused vendor paired with an Indian phone number to keep margins healthy. Committing to one vendor's SDK would have meant a rewrite later. Second, **this is a billing system** — connected minutes are money. A webhook that arrives twice, or a vendor that reports duration differently, cannot be allowed to quietly change what a customer is charged.
+
+## The decision
+
+**One voice-provider interface, many adapters.** The entire app talks to a single `IVoiceProvider` contract — `initiateCall`, `normalizeWebhook`, `verifySignature`. Each vendor gets an adapter that translates its vocabulary into our own canonical enums, and a factory picks the active one from an environment variable. Switching from the demo vendor to the production vendor is a config change, not a rewrite. Nothing outside the `voice/` folder knows which vendor is live.
+
+**The billing engine is ours, and it's pure.** Call cost is computed by our own code from the *normalized* webhook — never from a vendor's billing field — so changing vendors can't silently change the maths. It's a set of pure functions with unit tests, testable with zero infrastructure:
+
+```js
+// Connected calls bill a 60-second minimum pulse; everything else is free.
+// A 15-second connected call still bills one full minute.
+if (status !== 'connected') return 0
+if (durationSeconds <= 60) return 1
+return Math.ceil(durationSeconds / 60)
+```
+
+**The money path is idempotent.** Each call log carries the vendor's call id under a unique index; the webhook handler refuses to process a call that already reached a terminal status. A retried or duplicated webhook can't double-charge. Every minute spent is written to an append-only ledger that traces back to the exact call, so "why did we use 300 minutes last Tuesday?" always has an answer.
+
+## How it's built
+
+A Node + Express API over MongoDB (Mongoose), with JWT auth and admin/staff roles, multi-tenant from the first line so a second hospital needs no migration. The React + Vite dashboard covers the full workflow: CSV upload with a validate-before-commit preview, campaign triggering, filterable call logs with an audio player and transcript, and a prepaid-minute wallet with a live balance and transaction ledger. A webhook simulator lets the entire billing path — normalize → pulse → debit → ledger → stats — be proven without placing a single real call.
+
+It's deployed and reachable: the dashboard on Vercel, the API on a container host, the database on MongoDB Atlas — the whole thing stood up at zero hosting cost.
+
+## What I'd change
+
+The bulk-trigger endpoint loops through the campaign synchronously; at a few hundred patients that's fine, but a real production load wants a job queue so a 5,000-row campaign can't tie up a request. The live deployment is on a free tier whose backend sleeps when idle — right for a demo, but an always-on instance is the first thing I'd move to for production. And the production voice vendor (plus the +91 number) is wired through the adapter but not yet switched on — the seam is built and tested; flipping it is the next step.
